@@ -83,8 +83,7 @@ class UserController extends Controller
         $responses = [];
 
         $user = User::where('user_login',$request->user_login)->first();
-        $credentials = request(['user_login', 'user_password']);
-        $token = Auth::attempt($credentials);
+
         if(!$request->user_login || !$request->user_password){
             if(!$request->user_login ){
                 $response = 'Поле Логін не може лишатися порожнім';
@@ -115,7 +114,7 @@ class UserController extends Controller
         }
 
         if(Hash::check($request->user_password,$user->user_password)) {
-
+            $token = Auth::guard('api')->login($user);
             $user->user_token = $token;
             $user->save();
             return response()->json([
@@ -139,7 +138,7 @@ class UserController extends Controller
                 "message"=>'Такого користувача не існує'
             ],401);
         }
-        $user->user_token = null;
+        $user->user_token = '';
         $user->save();
 
         return response()->json([
